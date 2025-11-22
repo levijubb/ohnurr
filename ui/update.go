@@ -76,13 +76,12 @@ func (m Model) handleArticlesViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 
 	case "m":
-		// mark as read
-		m.MarkCurrentArticleAsRead()
-		return m, m.SetStatusMessage("Marked as read")
+		// manually update read status
+		m.ToggleCurrentArticleReadStatus()
 
 	case "o", "enter":
 		// open article in browser
-		// TODO: Implement sraping and reading within the TUI on enter press
+		// TODO: Implement scraping and reading within the TUI on enter press
 		article := m.GetCurrentArticle()
 		if article != nil && article.Link != "" {
 			m.MarkCurrentArticleAsRead()

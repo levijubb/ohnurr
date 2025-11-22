@@ -95,6 +95,10 @@ func (s *State) MarkAsRead(articleID string) {
 	s.ReadArticles[articleID] = true
 }
 
+func (s *State) UnmarkAsRead(articleID string) {
+	delete(s.ReadArticles, articleID)
+}
+
 func (s *State) IsRead(articleID string) bool {
 	return s.ReadArticles[articleID]
 }

@@ -114,10 +114,32 @@ func (m Model) IsArticleRead(article *rss.Article) bool {
 
 func (m *Model) MarkCurrentArticleAsRead() {
 	article := m.GetCurrentArticle()
-	if article != nil {
-		m.state.MarkAsRead(article.GetArticleID())
-		m.state.Save()
-		m.statusMessage = "Marked as read"
+
+	if article == nil {
+		return
+	}
+
+	m.state.MarkAsRead(article.GetArticleID())
+	m.state.Save()
+}
+
+func (m *Model) MarkCurrentArticleAsUnread() {
+	article := m.GetCurrentArticle()
+	if article == nil {
+		return
+	}
+
+	m.state.UnmarkAsRead(article.GetArticleID())
+	m.state.Save()
+}
+
+func (m *Model) ToggleCurrentArticleReadStatus() {
+	article := m.GetCurrentArticle()
+
+	if m.IsArticleRead(article) {
+		m.MarkCurrentArticleAsUnread()
+	} else {
+		m.MarkCurrentArticleAsRead()
 	}
 }
 
@@ -145,7 +167,7 @@ func (m *Model) RefreshFeeds() tea.Cmd {
 // sets a temporary status message
 func (m *Model) SetStatusMessage(msg string) tea.Cmd {
 	m.statusMessage = msg
-	return tea.Tick(time.Second*3, func(t time.Time) tea.Msg {
+	return tea.Tick(time.Second*2, func(t time.Time) tea.Msg {
 		return clearStatusMsg{}
 	})
 }

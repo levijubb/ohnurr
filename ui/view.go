@@ -13,7 +13,7 @@ var (
 	// color
 	activeColor   = lg.Color("205")
 	inactiveColor = lg.Color("240")
-	unreadColor   = lg.Color("214")
+	unreadColor   = lg.Color("81")
 	titleColor    = lg.Color("86")
 	accentColor   = lg.Color("147")
 

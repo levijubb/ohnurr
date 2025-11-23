@@ -25,6 +25,8 @@ type Model struct {
 	selectedSource  int
 	currentView     viewMode
 	filteredFeed    *rss.Feed // nil means show all feeds
+	searchInputTrap      bool
+	searchQuery     string
 	width           int
 	height          int
 	loading         bool
@@ -51,6 +53,8 @@ func NewModel(cfg *config.Config, state *config.State) Model {
 		selectedSource:  0,
 		currentView:     articlesView,
 		filteredFeed:    nil,
+		searchInputTrap:      false,
+		searchQuery:     "",
 		loading:         true,
 		statusMessage:   "Loading feeds...",
 	}
@@ -90,11 +94,20 @@ func (m *Model) buildAllArticles() {
 	})
 }
 
+// returns articles filtered by search query if active
+func (m Model) GetVisibleArticles() []articleWithSource {
+	if m.searchQuery != "" {
+		return FilterArticles(m.allArticles, m.searchQuery)
+	}
+	return m.allArticles
+}
+
 func (m Model) GetCurrentArticle() *rss.Article {
-	if len(m.allArticles) == 0 || m.selectedArticle >= len(m.allArticles) {
+	visibleArticles := m.GetVisibleArticles()
+	if len(visibleArticles) == 0 || m.selectedArticle >= len(visibleArticles) {
 		return nil
 	}
-	return m.allArticles[m.selectedArticle].article
+	return visibleArticles[m.selectedArticle].article
 }
 
 // returns the currently selected feed in sources view

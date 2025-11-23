@@ -31,6 +31,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
+		if m.searchInputTrap {
+			return m.handleSearchInput(msg)
+		}
+
+		// global keybindings (when not in search mode)
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
@@ -50,7 +55,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "?":
 			// help
-			return m, m.SetStatusMessage("↑/k:up ↓/j:down s:sources m:mark-read o:open r:refresh ?:help q:quit")
+			return m, m.SetStatusMessage("/:search ↑/k:up ↓/j:down s:sources m:toggle-read o:open r:refresh ?:help q:quit")
+
+		case "/":
+			// enter search mode (only in articles view)
+			if m.currentView == articlesView {
+				m.searchInputTrap = true
+				m.searchQuery = ""
+				m.selectedArticle = 0
+				return m, nil
+			}
+
+		case "esc":
+			// clear search if search query is active
+			if m.searchQuery != "" && m.currentView == articlesView {
+				m.searchQuery = ""
+				m.selectedArticle = 0
+				return m, nil
+			}
 		}
 
 		if m.currentView == articlesView {
@@ -64,6 +86,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) handleArticlesViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	visibleArticles := m.GetVisibleArticles()
+
 	switch msg.String() {
 	case "up", "k":
 		if m.selectedArticle > 0 {
@@ -71,7 +95,7 @@ func (m Model) handleArticlesViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 
 	case "down", "j":
-		if len(m.allArticles) > 0 && m.selectedArticle < len(m.allArticles)-1 {
+		if len(visibleArticles) > 0 && m.selectedArticle < len(visibleArticles)-1 {
 			m.selectedArticle++
 		}
 
@@ -91,6 +115,41 @@ func (m Model) handleArticlesViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			}
 			return m, m.SetStatusMessage("Opened in browser")
 		}
+	}
+
+	return m, nil
+}
+
+// handleSearchInput processes keyboard input in search mode
+func (m Model) handleSearchInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.Type {
+	case tea.KeyEscape:
+		// exit search mode and clear query
+		m.searchInputTrap = false
+		m.searchQuery = ""
+		m.selectedArticle = 0
+		return m, nil
+
+	case tea.KeyEnter:
+		// exit search mode but keep query active
+		m.searchInputTrap = false
+		return m, nil
+
+	case tea.KeyBackspace:
+		if len(m.searchQuery) > 0 {
+			m.searchQuery = m.searchQuery[:len(m.searchQuery)-1]
+			m.selectedArticle = 0 // reset selection when query changes
+		} else {
+			// if query is empty, exit search mode
+			m.searchInputTrap = false
+		}
+		return m, nil
+
+	case tea.KeyRunes:
+		// add typed character to query
+		m.searchQuery += string(msg.Runes)
+		m.selectedArticle = 0 // reset selection when query changes
+		return m, nil
 	}
 
 	return m, nil

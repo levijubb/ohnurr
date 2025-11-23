@@ -106,6 +106,14 @@ func (m Model) renderArticlesView() string {
 	if m.filteredFeed != nil {
 		headerText = fmt.Sprintf("📰 %s", m.filteredFeed.Title)
 	}
+	if m.searchInputTrap || m.searchQuery != "" {
+		headerText += " " + dimStyle.Render(fmt.Sprintf("[search: %s", m.searchQuery))
+		if m.searchInputTrap {
+			headerText += selectedStyle.Render("_")
+		}
+
+		headerText += dimStyle.Render("]")
+	}
 	lines = append(lines, headerStyle.Render(headerText))
 	lines = append(lines, "")
 
@@ -113,13 +121,19 @@ func (m Model) renderArticlesView() string {
 	// reserve space for header (2 lines) and status bar (1 line)
 	availableHeight := m.height - 3
 
-	if len(m.allArticles) == 0 {
-		lines = append(lines, dimStyle.Render("No articles available"))
+	visibleArticles := m.GetVisibleArticles()
+
+	if len(visibleArticles) == 0 {
+		if m.searchQuery != "" {
+			lines = append(lines, dimStyle.Render("No articles match your search"))
+		} else {
+			lines = append(lines, dimStyle.Render("No articles available"))
+		}
 	} else {
 		linesPerArticle := 4
 
 		// determine articles to show based on scroll pos
-		startIdx := min(m.selectedArticle, len(m.allArticles)-1)
+		startIdx := min(m.selectedArticle, len(visibleArticles)-1)
 
 		// try keep selected article in middle of view
 		if startIdx > availableHeight/(linesPerArticle*2) {
@@ -129,8 +143,8 @@ func (m Model) renderArticlesView() string {
 		}
 
 		lineCount := 0
-		for i := startIdx; i < len(m.allArticles) && lineCount < availableHeight-2; i++ {
-			item := m.allArticles[i]
+		for i := startIdx; i < len(visibleArticles) && lineCount < availableHeight-2; i++ {
+			item := visibleArticles[i]
 			article := item.article
 			isRead := m.IsArticleRead(article)
 			isSelected := i == m.selectedArticle
@@ -190,7 +204,7 @@ func (m Model) renderArticlesView() string {
 			}
 
 			// blank lines between articles
-			if lineCount < availableHeight-2 && i < len(m.allArticles)-1 {
+			if lineCount < availableHeight-2 && i < len(visibleArticles)-1 {
 				lines = append(lines, "")
 				lineCount++
 			}
@@ -255,8 +269,14 @@ func (m Model) renderStatusBar() string {
 	}
 
 	var help string
-	if m.currentView == articlesView {
-		help = dimStyle.Render("s: sources | ↑↓/jk: navigate | o/enter: open | m: mark read | r: refresh | ?: help | q: quit")
+	if m.searchInputTrap {
+		help = dimStyle.Render("Type to search | Enter: apply | Esc: cancel")
+	} else if m.currentView == articlesView {
+		if m.searchQuery != "" {
+			help = dimStyle.Render("/: search | Esc: clear search | ↑↓/jk: nav | o: open | m: toggle-read | q: quit")
+		} else {
+			help = dimStyle.Render("/: search | s: sources | ↑↓/jk: nav | o: open | m: toggle-read | r: refresh | ?: help | q: quit")
+		}
 	} else {
 		help = dimStyle.Render("s: back to articles | ↑↓/jk: navigate | enter: filter by source | a: show all | q: quit")
 	}

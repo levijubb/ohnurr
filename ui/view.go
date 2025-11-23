@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 
+	"ohnurr/reader"
+
 	lg "github.com/charmbracelet/lipgloss"
 )
 
@@ -87,10 +89,13 @@ func (m Model) View() string {
 	}
 
 	var content string
-	if m.currentView == articlesView {
+	switch m.currentView {
+	case articlesView:
 		content = m.renderArticlesView()
-	} else {
+	case sourcesView:
 		content = m.renderSourcesView()
+	case articleView:
+		content = m.renderArticleView()
 	}
 
 	statusBar := m.renderStatusBar()
@@ -261,6 +266,24 @@ func (m Model) renderSourcesView() string {
 	}
 
 	return strings.Join(lines, "\n")
+}
+
+func (m Model) renderArticleView() string {
+	var l []string
+
+	// header
+	a := m.GetCurrentArticle()
+	l = append(l, headerStyle.Render(a.Title))
+	l = append(l, "")
+
+	content, err := reader.GetArticleContent(a.Link)
+	if err != nil {
+		l = append(l, dimStyle.Render(fmt.Sprintf("Error loading article: %v", err)))
+	} else {
+		l = append(l, content)
+	}
+
+	return strings.Join(l, "\n")
 }
 
 func (m Model) renderStatusBar() string {

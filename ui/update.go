@@ -14,7 +14,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case feedsLoadedMsg:
 		m.feeds = msg.feeds
-		m.buildAllArticles()
+		m.buildArticles()
 		m.loading = false
 		m.statusMessage = ""
 		// reset selections if out of bounds
@@ -103,9 +103,8 @@ func (m Model) handleArticlesViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		// manually update read status
 		m.ToggleCurrentArticleReadStatus()
 
-	case "o", "enter":
+	case "o":
 		// open article in browser
-		// TODO: Implement scraping and reading within the TUI on enter press
 		article := m.GetCurrentArticle()
 		if article != nil && article.Link != "" {
 			m.MarkCurrentArticleAsRead()
@@ -115,6 +114,9 @@ func (m Model) handleArticlesViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			}
 			return m, m.SetStatusMessage("Opened in browser")
 		}
+
+	case "enter":
+		m.currentView = articleView
 	}
 
 	return m, nil
@@ -189,7 +191,7 @@ func (m Model) handleSourcesViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		// show all feeds
 		if m.filteredFeed != nil {
 			m.filteredFeed = nil
-			m.buildAllArticles()
+			m.buildArticles()
 			m.selectedArticle = 0
 			m.currentView = articlesView
 			return m, m.SetStatusMessage("Showing all feeds")

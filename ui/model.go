@@ -13,6 +13,7 @@ type viewMode int
 
 const (
 	articlesView viewMode = iota
+	articleView
 	sourcesView
 )
 
@@ -25,7 +26,7 @@ type Model struct {
 	selectedSource  int
 	currentView     viewMode
 	filteredFeed    *rss.Feed // nil means show all feeds
-	searchInputTrap      bool
+	searchInputTrap bool
 	searchQuery     string
 	width           int
 	height          int
@@ -53,7 +54,7 @@ func NewModel(cfg *config.Config, state *config.State) Model {
 		selectedSource:  0,
 		currentView:     articlesView,
 		filteredFeed:    nil,
-		searchInputTrap:      false,
+		searchInputTrap: false,
 		searchQuery:     "",
 		loading:         true,
 		statusMessage:   "Loading feeds...",
@@ -73,7 +74,7 @@ func loadFeeds(urls []string) tea.Cmd {
 }
 
 // creates a sorted list of all articles from all feeds
-func (m *Model) buildAllArticles() {
+func (m *Model) buildArticles() {
 	m.allArticles = []articleWithSource{}
 
 	for _, feed := range m.feeds {

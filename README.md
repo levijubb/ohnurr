@@ -2,7 +2,7 @@
 
 Ohnurr a TUI RSS reader.
 
-> **Note:** This project is very much in development and may have bugs. PRs are welcome!
+> **Note:** This project is very much in development and may have bugs. PRs are welcome.
 
 ## Prerequisites
 

@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/pkg/browser"
 )
@@ -23,6 +25,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.selectedSource >= len(m.feeds) {
 			m.selectedSource = 0
+		}
+		return m, nil
+
+	case articleContentLoadedMsg:
+		m.loadingArticle = false
+		if msg.err != nil {
+			m.statusMessage = fmt.Sprintf("Error loading article: %v", msg.err)
+		} else {
+			m.cachedArticleURL = msg.url
+			m.cachedArticleContent = msg.content
 		}
 		return m, nil
 
@@ -75,9 +87,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		if m.currentView == articlesView {
+		switch m.currentView {
+		case articlesView:
 			return m.handleArticlesViewKeys(msg)
-		} else {
+		case articleView:
+			return m.handleArticleViewKeys(msg)
+		case sourcesView:
 			return m.handleSourcesViewKeys(msg)
 		}
 	}
@@ -116,7 +131,69 @@ func (m Model) handleArticlesViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 
 	case "enter":
-		m.currentView = articleView
+		article := m.GetCurrentArticle()
+		if article != nil {
+			m.currentView = articleView
+			m.articleScroll = 0 // reset scroll when entering article
+
+			// check if article is cached
+			if m.cachedArticleURL != article.Link {
+				m.loadingArticle = true
+				m.cachedArticleURL = ""
+				m.cachedArticleContent = ""
+				return m, loadArticleContent(article.Link)
+			}
+		}
+	}
+
+	return m, nil
+}
+
+func (m Model) handleArticleViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "esc":
+		// return to articles list
+		m.currentView = articlesView
+		return m, nil
+
+	case "o":
+		// open article in browser
+		article := m.GetCurrentArticle()
+		if article != nil && article.Link != "" {
+			err := browser.OpenURL(article.Link)
+			if err != nil {
+				return m, m.SetStatusMessage("Failed to open browser")
+			}
+			return m, m.SetStatusMessage("Opened in browser")
+		}
+
+	case "up", "k":
+		if m.articleScroll > 0 {
+			m.articleScroll--
+		}
+
+	case "down", "j":
+		m.articleScroll++
+
+	case "pgup":
+		// scroll up by page
+		pageSize := m.height - 4 // account for header and status bar
+		m.articleScroll -= pageSize
+		if m.articleScroll < 0 {
+			m.articleScroll = 0
+		}
+
+	case "pgdown":
+		// scroll down by page
+		pageSize := m.height - 4
+		m.articleScroll += pageSize
+
+	case "g":
+		m.articleScroll = 0
+
+	case "G":
+		// scroll to bottom
+		m.articleScroll = m.height
 	}
 
 	return m, nil

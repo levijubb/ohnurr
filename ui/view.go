@@ -4,18 +4,16 @@ import (
 	"fmt"
 	"strings"
 
-	"ohnurr/content"
-
 	lg "github.com/charmbracelet/lipgloss"
 )
 
 var (
 	// color
-	activeColor   = lg.Color("205")
+	activeColor   = lg.Color("111")
 	inactiveColor = lg.Color("240")
-	unreadColor   = lg.Color("81")
-	titleColor    = lg.Color("86")
-	accentColor   = lg.Color("147")
+	unreadColor   = lg.Color("75")
+	titleColor    = lg.Color("108")
+	accentColor   = lg.Color("103")
 
 	// style
 	articleTitleStyle = lg.NewStyle().
@@ -250,22 +248,124 @@ func (m Model) renderSourcesView() string {
 	return strings.Join(lines, "\n")
 }
 
-func (m Model) renderArticleView() string {
-	var l []string
-
-	// header
-	a := m.GetCurrentArticle()
-	l = append(l, headerStyle.Render(a.Title))
-	l = append(l, "")
-
-	content, err := content.GetArticleContent(a.Link)
-	if err != nil {
-		l = append(l, dimStyle.Render(fmt.Sprintf("Error loading article: %v", err)))
-	} else {
-		l = append(l, content)
+func wrapLineWithIndent(line string, maxWidth int, leftMargin int) []string {
+	// empty lines
+	if strings.TrimSpace(line) == "" {
+		return []string{""}
 	}
 
-	return strings.Join(l, "\n")
+	indent := strings.Repeat(" ", leftMargin)
+
+	// dont wrap lines with ANSI escape codes (headers, code blocks)
+	if strings.Contains(line, "\x1b[") {
+		return []string{indent + line}
+	}
+
+	var wrapped []string
+	words := strings.Fields(line)
+	if len(words) == 0 {
+		return []string{""}
+	}
+
+	currentLine := ""
+	for _, word := range words {
+		testLine := currentLine
+		if testLine != "" {
+			testLine += " "
+		}
+		testLine += word
+
+		if len(testLine) <= maxWidth {
+			currentLine = testLine
+		} else {
+			if currentLine != "" {
+				wrapped = append(wrapped, indent+currentLine)
+			}
+			currentLine = word
+		}
+	}
+
+	if currentLine != "" {
+		wrapped = append(wrapped, indent+currentLine)
+	}
+
+	return wrapped
+}
+
+func (m Model) renderArticleView() string {
+	var header []string
+
+	// add top padding
+	header = append(header, "")
+
+	a := m.GetCurrentArticle()
+
+	if m.loadingArticle {
+		header = append(header, dimStyle.Render("Loading article..."))
+		return strings.Join(header, "\n")
+	}
+
+	if m.cachedArticleURL != a.Link || m.cachedArticleContent == "" {
+		header = append(header, dimStyle.Render("Article not loaded. Press Esc and Enter to reload."))
+		return strings.Join(header, "\n")
+	}
+
+	readableWidth := 80
+	if m.width < 100 {
+		// for narrow screens use 90% of width
+		readableWidth = int(float64(m.width) * 0.9)
+	}
+	if readableWidth < 40 {
+		readableWidth = 40 // min width
+	}
+
+	// calc left margin
+	leftMargin := max((m.width-readableWidth)/2, 2)
+
+	// title
+	titleLine := headerStyle.Render(a.Title)
+	titleWidth := lg.Width(titleLine)
+	titlePadding := (m.width - titleWidth) / 2
+	if titlePadding > 0 {
+		header = append(header, strings.Repeat(" ", titlePadding)+titleLine)
+	} else {
+		header = append(header, strings.Repeat(" ", leftMargin)+titleLine)
+	}
+	header = append(header, "")
+
+	// split content into lines and wrap
+	rawLines := strings.Split(m.cachedArticleContent, "\n")
+	var wrappedLines []string
+	for _, line := range rawLines {
+		wrapped := wrapLineWithIndent(line, readableWidth, leftMargin)
+		wrappedLines = append(wrappedLines, wrapped...)
+	}
+
+	// calcl height for content
+	headerHeight := len(header)
+	availableHeight := m.height - headerHeight - 1
+
+	// clamp scroll
+	scrollPos := m.articleScroll
+	maxScroll := max(len(wrappedLines)-availableHeight, 0)
+	if scrollPos > maxScroll {
+		scrollPos = maxScroll
+	}
+	if scrollPos < 0 {
+		scrollPos = 0
+	}
+
+	startLine := scrollPos
+	endLine := min(startLine+availableHeight, len(wrappedLines))
+	visibleContent := wrappedLines[startLine:endLine]
+
+	// combine header and content
+	result := strings.Join(header, "\n")
+	if len(visibleContent) > 0 {
+		result += "\n" + strings.Join(visibleContent, "\n")
+	}
+
+	return result
 }
 
 func (m Model) renderStatusBar() string {
@@ -282,6 +382,8 @@ func (m Model) renderStatusBar() string {
 		} else {
 			help = dimStyle.Render("/: search | s: sources | ↑↓/jk: nav | o: open | m: toggle-read | r: refresh | ?: help | q: quit")
 		}
+	} else if m.currentView == articleView {
+		help = dimStyle.Render("↑↓/jk: scroll | PgDn/PgUp: page | g/G: top/bottom | o: open | Esc: back | q: quit")
 	} else {
 		help = dimStyle.Render("s: back to articles | ↑↓/jk: navigate | enter: filter by source | a: show all | q: quit")
 	}

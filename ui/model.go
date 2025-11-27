@@ -2,6 +2,7 @@ package ui
 
 import (
 	"ohnurr/config"
+	"ohnurr/content"
 	"ohnurr/rss"
 	"sort"
 	"time"
@@ -18,20 +19,24 @@ const (
 )
 
 type Model struct {
-	config          *config.Config
-	state           *config.State
-	feeds           []*rss.Feed
-	allArticles     []articleWithSource
-	selectedArticle int
-	selectedSource  int
-	currentView     viewMode
-	filteredFeed    *rss.Feed // nil means show all feeds
-	searchInputTrap bool
-	searchQuery     string
-	width           int
-	height          int
-	loading         bool
-	statusMessage   string
+	config               *config.Config
+	state                *config.State
+	feeds                []*rss.Feed
+	allArticles          []articleWithSource
+	selectedArticle      int
+	selectedSource       int
+	currentView          viewMode
+	filteredFeed         *rss.Feed // nil == show all feeds
+	searchInputTrap      bool
+	searchQuery          string
+	width                int
+	height               int
+	loading              bool
+	statusMessage        string
+	articleScroll        int // scroll position in article view
+	cachedArticleURL     string
+	cachedArticleContent string // TODO: cache more than one article at a time
+	loadingArticle       bool
 }
 
 // combines an article with its source feed info
@@ -42,6 +47,12 @@ type articleWithSource struct {
 
 type feedsLoadedMsg struct {
 	feeds []*rss.Feed
+}
+
+type articleContentLoadedMsg struct {
+	url     string
+	content string
+	err     error
 }
 
 func NewModel(cfg *config.Config, state *config.State) Model {
@@ -70,6 +81,18 @@ func loadFeeds(urls []string) tea.Cmd {
 	return func() tea.Msg {
 		feeds := rss.FetchAllFeeds(urls)
 		return feedsLoadedMsg{feeds: feeds}
+	}
+}
+
+// creates a command to fetch article content
+func loadArticleContent(url string) tea.Cmd {
+	return func() tea.Msg {
+		articleContent, err := content.GetArticleContent(url)
+		return articleContentLoadedMsg{
+			url:     url,
+			content: articleContent,
+			err:     err,
+		}
 	}
 }
 

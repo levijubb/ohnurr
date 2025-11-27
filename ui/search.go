@@ -38,7 +38,7 @@ func FilterArticlesByContent(article *rss.Article, query string) bool {
 	}
 
 	// description
-	if strings.Contains(strings.ToLower(stripHTML(article.Description)), query) {
+	if strings.Contains(strings.ToLower(article.Description), query) {
 		return true
 	}
 
@@ -55,7 +55,7 @@ func matchesSearch(item articleWithSource, query string) bool {
 	}
 
 	// description
-	if strings.Contains(strings.ToLower(stripHTML(article.Description)), query) {
+	if strings.Contains(strings.ToLower(article.Description), query) {
 		return true
 	}
 

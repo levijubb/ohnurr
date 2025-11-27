@@ -2,11 +2,9 @@ package ui
 
 import (
 	"fmt"
-	"html"
-	"regexp"
 	"strings"
 
-	"ohnurr/reader"
+	"ohnurr/content"
 
 	lg "github.com/charmbracelet/lipgloss"
 )
@@ -54,22 +52,6 @@ var (
 			Foreground(unreadColor).
 			Bold(true)
 )
-
-// remove HTML tags and decodes HTML entities from string
-func stripHTML(s string) string {
-	s = regexp.MustCompile(`(?is)<script.*?</script>`).ReplaceAllString(s, "")
-	s = regexp.MustCompile(`(?is)<style.*?</style>`).ReplaceAllString(s, "")
-
-	// decode entities like &amp, &lt, etc
-	s = html.UnescapeString(s)
-
-	re := regexp.MustCompile(`(?s)<.*?>`)
-	s = re.ReplaceAllString(s, "")
-
-	s = regexp.MustCompile(`\s+`).ReplaceAllString(s, " ")
-
-	return strings.TrimSpace(s)
-}
 
 func (m Model) View() string {
 	if m.loading {
@@ -187,7 +169,7 @@ func (m Model) renderArticlesView() string {
 
 			// description
 			if article.Description != "" && lineCount < availableHeight-2 {
-				desc := stripHTML(article.Description)
+				desc := article.Description
 				maxDescWidth := m.width - 6
 				if len(desc) > maxDescWidth {
 					desc = desc[:maxDescWidth-3] + "..."
@@ -276,7 +258,7 @@ func (m Model) renderArticleView() string {
 	l = append(l, headerStyle.Render(a.Title))
 	l = append(l, "")
 
-	content, err := reader.GetArticleContent(a.Link)
+	content, err := content.GetArticleContent(a.Link)
 	if err != nil {
 		l = append(l, dimStyle.Render(fmt.Sprintf("Error loading article: %v", err)))
 	} else {

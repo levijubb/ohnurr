@@ -1,4 +1,4 @@
-package reader
+package content
 
 import (
 	"io"
@@ -17,5 +17,5 @@ func GetArticleContent(url string) (string, error) {
 		return "", nil
 	}
 
-	return string(body), nil
+	return StripHTML(string(body)), nil
 }

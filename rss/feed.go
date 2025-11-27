@@ -2,6 +2,7 @@ package rss
 
 import (
 	"fmt"
+	"ohnurr/content"
 	"time"
 
 	"github.com/mmcdole/gofeed"
@@ -51,7 +52,7 @@ func FetchFeed(url string) (*Feed, error) {
 		articles = append(articles, Article{
 			Title:       item.Title,
 			Link:        item.Link,
-			Description: item.Description,
+			Description: content.StripHTML(item.Description),
 			Published:   published,
 			GUID:        guid,
 			FeedTitle:   feed.Title,

@@ -1,4 +1,4 @@
-package ui
+package content
 
 import "testing"
 
@@ -60,7 +60,7 @@ func Test_stripHTML(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := stripHTML(tt.s)
+			got := StripHTML(tt.s)
 			if got != tt.want {
 				t.Errorf("stripHTML() = %v, want %v", got, tt.want)
 			}

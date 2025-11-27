@@ -19,12 +19,3 @@ ohnurr list         # show configured feeds
 
 `feeds` and `state` files are plain text and live in `~/.config/ohnurr/`.
 
-## Keyboard Reference
-
-- `j` / `k` or arrow keys: move selection
-- `Tab`: switch between feed and article panes
-- `Enter` or `o`: open article in browser (marks read)
-- `m`: mark read without opening
-- `r`: refresh all feeds
-- `?`: inline help
-- `q` or `Ctrl+C`: exit

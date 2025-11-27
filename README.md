@@ -11,7 +11,9 @@ Ohnurr a TUI RSS reader.
 
 ## Build & Run
 Ensure your the go bin directory is in your $PATH:
-unix: `$HOME/go/bin`
+
+unix `$HOME/go/bin`
+
 windows `%USERPROFILE%\\go\\bin`
 
 ```bash

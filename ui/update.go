@@ -131,18 +131,23 @@ func (m Model) handleArticlesViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 
 	case "enter":
+		// view article
 		article := m.GetCurrentArticle()
-		if article != nil {
-			m.currentView = articleView
-			m.articleScroll = 0 // reset scroll when entering article
+		if article == nil {
+			return m, m.SetStatusMessage("Could not get article")
+		}
 
-			// check if article is cached
-			if m.cachedArticleURL != article.Link {
-				m.loadingArticle = true
-				m.cachedArticleURL = ""
-				m.cachedArticleContent = ""
-				return m, loadArticleContent(article.Link)
-			}
+		m.currentView = articleView
+		m.articleScroll = 0 // reset scroll when entering article
+
+		m.MarkCurrentArticleAsRead()
+
+		// check if article is cached
+		if m.cachedArticleURL != article.Link {
+			m.loadingArticle = true
+			m.cachedArticleURL = ""
+			m.cachedArticleContent = ""
+			return m, loadArticleContent(article.Link)
 		}
 	}
 

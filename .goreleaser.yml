@@ -1,5 +1,12 @@
 version: 2
 
+git:
+  tag_sort: -version:refname
+  prerelease_suffix: "-"
+
+metadata:
+  mod_timestamp: "{{ .CommitTimestamp }}"
+
 before:
   hooks:
     - go mod tidy

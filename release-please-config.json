@@ -2,7 +2,7 @@
   "packages": {
     ".": {
       "release-type": "go",
-      "package-name": "ohnurr",
+      "include-component-in-tag": false,
       "changelog-sections": [
         {
           "type": "feat",

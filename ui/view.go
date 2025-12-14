@@ -8,14 +8,12 @@ import (
 )
 
 var (
-	// color
 	activeColor   = lg.Color("111")
 	inactiveColor = lg.Color("240")
 	unreadColor   = lg.Color("75")
 	titleColor    = lg.Color("108")
 	accentColor   = lg.Color("103")
 
-	// style
 	articleTitleStyle = lg.NewStyle().
 				Foreground(titleColor).
 				Bold(true)

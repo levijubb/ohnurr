@@ -1,13 +1,14 @@
 package ui
 
 import (
-	"ohnurr/config"
-	"ohnurr/content"
-	"ohnurr/rss"
 	"sort"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+
+	"ohnurr/config"
+	"ohnurr/content"
+	"ohnurr/rss"
 )
 
 type viewMode int
@@ -157,7 +158,7 @@ func (m *Model) MarkCurrentArticleAsRead() {
 	}
 
 	m.state.MarkAsRead(article.GetArticleID())
-	m.state.Save()
+	_ = m.state.Save()
 }
 
 func (m *Model) MarkCurrentArticleAsUnread() {
@@ -167,7 +168,7 @@ func (m *Model) MarkCurrentArticleAsUnread() {
 	}
 
 	m.state.UnmarkAsRead(article.GetArticleID())
-	m.state.Save()
+	_ = m.state.Save()
 }
 
 func (m *Model) ToggleCurrentArticleReadStatus() {

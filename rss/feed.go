@@ -2,10 +2,11 @@ package rss
 
 import (
 	"fmt"
-	"ohnurr/content"
 	"time"
 
 	"github.com/mmcdole/gofeed"
+
+	"ohnurr/content"
 )
 
 type Feed struct {

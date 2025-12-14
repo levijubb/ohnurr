@@ -46,7 +46,7 @@ func Load() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	c := &Config{
 		Feeds: []string{},
@@ -91,7 +91,7 @@ func (c *Config) Save() error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	writer := bufio.NewWriter(f)
 	for _, feed := range c.Feeds {

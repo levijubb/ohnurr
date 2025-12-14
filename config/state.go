@@ -35,7 +35,7 @@ func LoadState() (*State, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	state := &State{
 		ReadArticles: make(map[string]bool),
@@ -78,7 +78,7 @@ func (s *State) Save() error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	writer := bufio.NewWriter(f)
 	for articleID := range s.ReadArticles {

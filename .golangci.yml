@@ -15,9 +15,11 @@ linters:
     - goimports
     - misspell
 
-linters-settings:
-  goimports:
-    local-prefixes: ohnurr
+formatters:
+  settings:
+    goimports:
+      local-prefixes:
+        - ohnurr
 
 issues:
   exclude-rules:

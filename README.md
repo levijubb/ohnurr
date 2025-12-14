@@ -23,10 +23,12 @@ go install
 
 ## Commands
 ```bash
-ohnurr              # launch TUI
-ohnurr add <url>    # add a feed
-ohnurr remove <url> # drop a feed
-ohnurr list         # show configured feeds
+ohnurr                 # Launch interactive TUI
+ohnurr add <url>       # Add RSS feed
+ohnurr remove <url>    # Remove RSS feed
+ohnurr list            # List all feeds
+ohnurr version         # Show version information
+ohnurr help            # Show help message
 ```
 
 `feeds` and `state` files are plain text and live in `~/.config/ohnurr/`.

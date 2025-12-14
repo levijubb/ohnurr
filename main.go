@@ -10,6 +10,12 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 func main() {
 	if len(os.Args) < 2 {
 		// no args so launch TUI
@@ -34,6 +40,8 @@ func main() {
 		removeFeed(os.Args[2])
 	case "list":
 		listFeeds()
+	case "version", "--version", "-v":
+		printVersion()
 	case "help", "--help", "-h":
 		printHelp()
 	default:
@@ -129,6 +137,12 @@ func launchTUI() {
 	}
 }
 
+func printVersion() {
+	fmt.Printf("ohnurr version %s\n", version)
+	fmt.Printf("commit: %s\n", commit)
+	fmt.Printf("built: %s\n", date)
+}
+
 func printHelp() {
 	fmt.Println("ohnurr - Terminal RSS Reader")
 	fmt.Println()
@@ -137,5 +151,6 @@ func printHelp() {
 	fmt.Println("  ohnurr add <url>    Add RSS feed")
 	fmt.Println("  ohnurr remove <url> Remove RSS feed")
 	fmt.Println("  ohnurr list         List all feeds")
+	fmt.Println("  ohnurr version      Show version information")
 	fmt.Println("  ohnurr help         Show this help message")
 }

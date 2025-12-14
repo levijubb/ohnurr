@@ -11,8 +11,6 @@ linters:
     - ineffassign
     - staticcheck
     - unused
-    - gofmt
-    - goimports
     - misspell
   exclusions:
     rules:
@@ -21,6 +19,9 @@ linters:
           - errcheck
 
 formatters:
+  enable:
+    - gofmt
+    - goimports
   settings:
     goimports:
       local-prefixes:

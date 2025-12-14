@@ -14,15 +14,14 @@ linters:
     - gofmt
     - goimports
     - misspell
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - errcheck
 
 formatters:
   settings:
     goimports:
       local-prefixes:
         - ohnurr
-
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - errcheck

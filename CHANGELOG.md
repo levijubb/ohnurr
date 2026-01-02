@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0](https://github.com/levijubb/ohnurr/compare/v0.5.0...v0.6.0) (2026-01-02)
+
+
+### Features
+
+* added publication dates and times ([73f0541](https://github.com/levijubb/ohnurr/commit/73f05412610882b4f5b6877cd6015419706f4299))
+
+
+### Bug Fixes
+
+* source view toggle bug ([62caeea](https://github.com/levijubb/ohnurr/commit/62caeea146e277067228b34f1a76d3593876c9ce))
+
 ## [0.5.0](https://github.com/levijubb/ohnurr/compare/v0.4.0...v0.5.0) (2025-12-14)
 
 

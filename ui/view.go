@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	lg "github.com/charmbracelet/lipgloss"
 )
@@ -48,6 +49,43 @@ var (
 			Foreground(unreadColor).
 			Bold(true)
 )
+
+func formatPublishDate(published time.Time) string {
+	now := time.Now()
+	diff := now.Sub(published)
+
+	// <1 hour
+	if diff < time.Hour {
+		mins := int(diff.Minutes())
+		if mins < 1 {
+			return "just now"
+		}
+		return fmt.Sprintf("%dm ago", mins)
+	}
+
+	// <24 hours
+	if diff < 24*time.Hour {
+		hours := int(diff.Hours())
+		return fmt.Sprintf("%dh ago", hours)
+	}
+
+	// <7 days
+	if diff < 7*24*time.Hour {
+		days := int(diff.Hours() / 24)
+		if days == 1 {
+			return "yesterday"
+		}
+		return fmt.Sprintf("%dd ago", days)
+	}
+
+	// < 1 year so show month and day
+	if published.Year() == now.Year() {
+		return published.Format("Jan 2")
+	}
+
+	// erry old
+	return published.Format("Jan 2, 2006")
+}
 
 func (m Model) View() string {
 	if m.loading {
@@ -179,9 +217,10 @@ func (m Model) renderArticlesView() string {
 				}
 			}
 
-			// source
+			// source and date
 			if lineCount < availableHeight-2 {
-				sourceLine := "    " + sourceStyle.Render("from "+item.feedTitle)
+				dateStr := formatPublishDate(article.Published)
+				sourceLine := "    " + sourceStyle.Render("from "+item.feedTitle) + dimStyle.Render(" · "+dateStr)
 				lines = append(lines, sourceLine)
 				lineCount++
 			}

@@ -371,19 +371,21 @@ func (m Model) renderStatusBar() string {
 		return statusStyle.Render(m.statusMessage)
 	}
 
-	var help string
+	return statusStyle.Render(m.getHelpText())
+}
+
+func (m Model) getHelpText() string {
 	if m.searchInputTrap {
-		help = dimStyle.Render("Type to search | Enter: apply | Esc: cancel")
-	} else if m.currentView == articlesView {
-		if m.searchQuery != "" {
-			help = dimStyle.Render("/: search | Esc: clear search | ↑↓/jk: nav | o: open | m: toggle-read | q: quit")
-		} else {
-			help = dimStyle.Render("/: search | s: sources | ↑↓/jk: nav | o: open | m: toggle-read | r: refresh | ?: help | q: quit")
-		}
-	} else if m.currentView == articleView {
-		help = dimStyle.Render("↑↓/jk: scroll | PgDn/PgUp: page | g/G: top/bottom | o: open | Esc: back | q: quit")
-	} else {
-		help = dimStyle.Render("s: back to articles | ↑↓/jk: navigate | enter: filter by source | a: show all | q: quit")
+		return dimStyle.Render("Type to search | Enter: apply | Esc: cancel")
 	}
-	return statusStyle.Render(help)
+
+	switch m.currentView {
+	case articlesView:
+		return dimStyle.Render("/: search | ↑↓/jk: nav | o: open | m: toggle-read | s: sources | r: refresh | q: quit")
+	case articleView:
+		return dimStyle.Render("↑↓/jk: scroll | PgDn/PgUp: page | g/G: top/bottom | o: open | Esc: back | q: quit")
+	case sourcesView:
+		return dimStyle.Render("s: back to articles | ↑↓/jk: navigate | enter: filter by source | a: show all | q: quit")
+	}
+	return ""
 }

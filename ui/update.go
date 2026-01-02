@@ -54,9 +54,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "s":
 			// toggle sources and articles view
-			if m.currentView == articlesView {
+			switch m.currentView {
+			case articlesView:
 				m.currentView = sourcesView
-			} else {
+			case sourcesView:
 				m.currentView = articlesView
 			}
 			return m, nil
@@ -64,10 +65,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "r":
 			// refresh
 			return m, m.RefreshFeeds()
-
-		case "?":
-			// help
-			return m, m.SetStatusMessage("/:search ↑/k:up ↓/j:down s:sources m:toggle-read o:open r:refresh ?:help q:quit")
 
 		case "/":
 			// enter search mode (only in articles view)
